@@ -1,0 +1,113 @@
+services:
+    CartBundle\:
+        resource: '../../'
+        exclude:
+            - '../../Domain/Model/'
+            - '../../Domain/ValueObject/'
+            - '../../Domain/Event/'
+
+    CartBundle\UI\Http\Controller\:
+        resource: '../../UI/Http/Controller'
+        public: true
+        autowire: true
+        autoconfigure: true
+
+    CartBundle\Application\UseCases\:
+        resource: '../../Application/UseCases/'
+        autowire: true
+        autoconfigure: true
+
+    CartBundle\Infrastructure\EventListener\ProductUpdatedEventListener:
+        arguments:
+            $cartRepository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
+            $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
+        tags:
+            - { name: 'kernel.event_listener', event: ProductBundle\Domain\Event\ProductUpdatedEvent }
+
+    CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository:
+        arguments:
+            $em: '@doctrine.orm.entity_manager'
+            $mapper: '@CartBundle\Infrastructure\Persistence\Mysql\Mapper\CartMapper'
+
+    CartBundle\Infrastructure\Persistence\Mysql\DoctrineOrderRepository:
+        arguments:
+            $em: '@doctrine.orm.entity_manager'
+            $mapper: '@CartBundle\Infrastructure\Persistence\Mysql\Mapper\OrderMapper'
+
+    CartBundle\Infrastructure\Event\DomainEventDispatcher:
+        arguments:
+            $dispatcher: '@event_dispatcher'
+
+    CartBundle\UI\Http\Controller\AddProductToCartController:
+        arguments:
+            $handler: '@CartBundle\Application\UseCases\AddProductToCart\AddProductToCartHandler'
+        tags: [ 'controller.service_arguments' ]
+        public: true
+    CartBundle\Application\UseCases\AddProductToCart\AddProductToCartHandler:
+        arguments:
+            $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
+            $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
+            $eventDispatcher: '@CartBundle\Infrastructure\Event\DomainEventDispatcher'
+            $validator: '@CartBundle\Application\UseCases\AddProductToCart\AddProductToCartValidator'
+    CartBundle\Application\UseCases\AddProductToCart\AddProductToCartValidator:
+        arguments:
+            $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
+            $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
+            $validatorHelper: '@App\Helper\ValidatorHelper'
+
+
+    CartBundle\UI\Http\Controller\DeleteProductFromCartController:
+        arguments:
+            $handler: '@CartBundle\Application\UseCases\DeleteProductFromCart\DeleteProductFromCartHandler'
+        tags: [ 'controller.service_arguments' ]
+        public: true
+    CartBundle\Application\UseCases\DeleteProductFromCart\DeleteProductFromCartHandler:
+        arguments:
+            $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
+            $eventDispatcher: '@CartBundle\Infrastructure\Event\DomainEventDispatcher'
+            $validator: '@CartBundle\Application\UseCases\DeleteProductFromCart\DeleteProductFromCartValidator'
+    CartBundle\Application\UseCases\DeleteProductFromCart\DeleteProductFromCartValidator:
+        arguments:
+            $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
+            $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
+            $validatorHelper: '@App\Helper\ValidatorHelper'
+
+
+    CartBundle\UI\Http\Controller\UpdateCartProductQtyController:
+        arguments:
+            $handler: '@CartBundle\Application\UseCases\UpdateCartProductQty\UpdateCartProductQtyHandler'
+        tags: [ 'controller.service_arguments' ]
+        public: true
+    CartBundle\Application\UseCases\UpdateCartProductQty\UpdateCartProductQtyHandler:
+        arguments:
+            $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
+            $eventDispatcher: '@CartBundle\Infrastructure\Event\DomainEventDispatcher'
+            $validator: '@CartBundle\Application\UseCases\UpdateCartProductQty\UpdateCartProductQtyValidator'
+    CartBundle\Application\UseCases\UpdateCartProductQty\UpdateCartProductQtyValidator:
+        arguments:
+            $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
+            $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
+            $validatorHelper: '@App\Helper\ValidatorHelper'
+
+
+    CartBundle\UI\Http\Controller\CartCheckoutController:
+        arguments:
+            $handler: '@CartBundle\Application\UseCases\Checkout\CartCheckoutHandler'
+        tags: [ 'controller.service_arguments' ]
+        public: true
+    CartBundle\Application\UseCases\Checkout\CartCheckoutHandler:
+        arguments:
+            $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
+            $orderRepository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineOrderRepository'
+#            $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
+            $eventDispatcher: '@CartBundle\Infrastructure\Event\DomainEventDispatcher'
+            $validator: '@CartBundle\Application\UseCases\Checkout\CartCheckoutValidator'
+            $em: '@doctrine.orm.entity_manager'
+#            $logger:
+
+
+    CartBundle\Application\UseCases\Checkout\CartCheckoutValidator:
+        arguments:
+            $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
+            $orderRepository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineOrderRepository'
+            $validatorHelper: '@App\Helper\ValidatorHelper'

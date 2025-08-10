@@ -1,0 +1,112 @@
+services:
+    ProductBundle\:
+        resource: '../../'
+        exclude:
+            - '../../Domain/Model/'
+            - '../../Domain/ValueObject/'
+            - '../../Domain/Event/'
+
+    Predis\Client:
+        class: Predis\Client
+        arguments:
+            - 'tcp://redis:6379'
+
+    ProductBundle\UI\Http\Controller\:
+        resource: '../../UI/Http/Controller'
+        public: true
+        autowire: true
+        autoconfigure: true
+
+    ProductBundle\Application\UseCases\:
+        resource: '../../Application/UseCases/'
+        autowire: true
+        autoconfigure: true
+
+    ProductBundle\Infrastructure\Query\Redis\RedisProductSync:
+        arguments:
+            $redis: '@Predis\Client'
+            $repository: '@ProductBundle\Infrastructure\Persistence\Mysql\DoctrineProductRepository'
+        tags:
+            - { name: 'kernel.event_listener', event: ProductBundle\Domain\Event\ProductCreatedEvent, method: onProductCreated }
+            - { name: 'kernel.event_listener', event: ProductBundle\Domain\Event\ProductUpdatedEvent, method: onProductUpdated }
+            - { name: 'kernel.event_listener', event: ProductBundle\Domain\Event\ProductDeletedEvent, method: onProductDeleted }
+
+    ProductBundle\Domain\Repository\ProductReadRepository:
+        alias: ProductBundle\Infrastructure\Query\Redis\RedisProductQuery
+
+    ProductBundle\Infrastructure\Query\Redis\RedisProductQuery:
+        arguments:
+            $redis: '@Predis\Client'
+
+    ProductBundle\Infrastructure\Persistence\Mysql\DoctrineProductRepository:
+        arguments:
+            $em: '@doctrine.orm.entity_manager'
+
+    ProductBundle\Infrastructure\Event\DomainEventDispatcher:
+        arguments:
+            $dispatcher: '@event_dispatcher'
+
+
+    ProductBundle\Application\UseCases\FindAllProduct\FindAllProductHandler:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+
+    ProductBundle\UI\Http\Controller\CreateProductController:
+        arguments:
+            $handler: '@ProductBundle\Application\UseCases\CreateProduct\CreateProductHandler'
+        tags: [ 'controller.service_arguments' ]
+        public: true
+    ProductBundle\Application\UseCases\CreateProduct\CreateProductHandler:
+        arguments:
+            $repository: '@ProductBundle\Infrastructure\Persistence\Mysql\DoctrineProductRepository'
+            $eventDispatcher: '@ProductBundle\Infrastructure\Event\DomainEventDispatcher'
+            $validator: '@ProductBundle\Application\UseCases\CreateProduct\CreateProductValidator'
+    ProductBundle\Application\UseCases\CreateProduct\CreateProductValidator:
+        arguments:
+            $repository: '@ProductBundle\Infrastructure\Persistence\Mysql\DoctrineProductRepository'
+            $validatorHelper: '@App\Helper\ValidatorHelper'
+
+    ProductBundle\UI\Http\Controller\DeleteProductController:
+        arguments:
+            $handler: '@ProductBundle\Application\UseCases\DeleteProduct\DeleteProductHandler'
+        tags: [ 'controller.service_arguments' ]
+        public: true
+        autowire: true
+        autoconfigure: true
+    ProductBundle\Application\UseCases\DeleteProduct\DeleteProductHandler:
+        arguments:
+            $repository: '@ProductBundle\Infrastructure\Persistence\Mysql\DoctrineProductRepository'
+            $eventDispatcher: '@ProductBundle\Infrastructure\Event\DomainEventDispatcher'
+            $validator: '@ProductBundle\Application\UseCases\DeleteProduct\DeleteProductValidator'
+    ProductBundle\Application\UseCases\DeleteProduct\DeleteProductValidator:
+        arguments:
+            $repository: '@ProductBundle\Infrastructure\Persistence\Mysql\DoctrineProductRepository'
+            $validatorHelper: '@App\Helper\ValidatorHelper'
+
+
+    ProductBundle\UI\Http\Controller\UpdateProductController:
+        arguments:
+            $handler: '@ProductBundle\Application\UseCases\UpdateProduct\UpdateProductHandler'
+        tags: [ 'controller.service_arguments' ]
+        public: true
+        autowire: true
+        autoconfigure: true
+    ProductBundle\Application\UseCases\UpdateProduct\UpdateProductHandler:
+        arguments:
+            $repository: '@ProductBundle\Infrastructure\Persistence\Mysql\DoctrineProductRepository'
+            $eventDispatcher: '@ProductBundle\Infrastructure\Event\DomainEventDispatcher'
+            $validator: '@ProductBundle\Application\UseCases\UpdateProduct\UpdateProductValidator'
+    ProductBundle\Application\UseCases\UpdateProduct\UpdateProductValidator:
+        arguments:
+            $repository: '@ProductBundle\Infrastructure\Persistence\Mysql\DoctrineProductRepository'
+            $validatorHelper: '@App\Helper\ValidatorHelper'
+
+
+    ProductBundle\Infrastructure\EventListener\StockDecreaseOnOrderListener:
+        autowire: true
+        autoconfigure: true
+        tags:
+            - { name: 'kernel.event_listener', event: 'CartBundle\Domain\Event\StockDecreaseRequested' }
+

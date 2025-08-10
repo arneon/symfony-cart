@@ -1,0 +1,8 @@
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+        driver: 'pdo_sqlite'
+        charset: utf8
+        memory: false
+    orm:
+        auto_generate_proxy_classes: true
