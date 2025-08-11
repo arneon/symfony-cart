@@ -2,4 +2,4 @@ services:
     Predis\Client:
         class: Predis\Client
         arguments:
-            - 'redis://127.0.0.1:63785'
+            - '%env(REDIS_URL)%'

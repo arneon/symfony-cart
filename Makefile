@@ -41,5 +41,4 @@ logs-mysql:
 	docker logs -f $(MYSQL_CONTAINER)
 
 migrate:
-	docker exec $(PHP_CONTAINER) php bin/console doctrine:migrations:diff --quiet  > /dev/null 2>&1
 	docker exec $(PHP_CONTAINER) php bin/console doctrine:migrations:migrate --no-interaction --quiet
