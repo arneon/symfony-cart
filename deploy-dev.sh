@@ -15,4 +15,7 @@ composer install
 cd ..
 
 make up
+make down
+
+make up
 make migrate
