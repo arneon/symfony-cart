@@ -19,3 +19,7 @@ make down
 
 make up
 make migrate
+
+cd symfony
+php bin/phpunit --testdox --colors
+XDEBUG_MODE=coverage php bin/phpunit --coverage-html public/coverage
