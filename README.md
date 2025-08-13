@@ -5,14 +5,16 @@ Backend modular con **Symfony 7.3** que aplica **Arquitectura Hexagonal**, **DDD
 - **ProductBundle**: gestión de productos (crear/actualizar/eliminar), lectura optimizada desde Redis.
 - **CartBundle**: carrito de compras (agregar/actualizar/eliminar ítems, ver carrito y checkout → pedido).
 
-Esta guía explica cómo levantar el proyecto y correr tests.
+Esta guía explica cómo levantar el proyecto y correr tests.  
 
+- **Update de 2025-08-13**: Se que no cuenta para la prueba, sin embargo me pareció adecuado hacerlo. Agregué eventos en el carrito para que se sincronice con Elastic Search, y posteriormente pueda ser consumido por el área de marketing a través de Kibana (por ejemplo). 
 ---
 
 ## Tabla de contenidos
 
 - [Stack](#stack)
 - [Arquitectura](#arquitectura)
+- [Contenedores Docker](#contenedores-docker)
 - [Documentación de API](#documentación-de-api)
 - [Puesta en marcha](#puesta-en-marcha)
 - [Tests](#tests)
@@ -50,6 +52,16 @@ Esta guía explica cómo levantar el proyecto y correr tests.
     - Cuando **ProductBundle** actualiza un producto, **CartBundle** escucha el evento y **actualiza el precio** en carritos `open` donde esté ese producto.
 - **Checkout**
     - Convierte un carrito en **pedido**, marca el carrito como `checked_out`  y **ajusta stock**.
+
+---
+
+## Contenedores Docker
+
+- **PHP**
+- **Nginx**
+- **MySQL**
+- **Redis**
+- **Elasticsearch**
 
 ---
 

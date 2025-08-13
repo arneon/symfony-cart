@@ -4,7 +4,7 @@ namespace CartBundle\Domain\Event;
 
 use CartBundle\Domain\ValueObject\CartCode;
 use CartBundle\Domain\ValueObject\ProductId;
-class ProductAddedToCartEvent implements DomainEvent
+class DeleteProductFromCartEvent implements DomainEvent
 {
     private CartCode $cartCode;
     private ProductId $productId;
@@ -33,7 +33,7 @@ class ProductAddedToCartEvent implements DomainEvent
 
     public static function eventName(): string
     {
-        return 'cart.product_added';
+        return 'cart.product_deleted';
     }
 
     public function toArray(): array

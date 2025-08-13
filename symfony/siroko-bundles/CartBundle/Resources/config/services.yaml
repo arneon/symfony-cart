@@ -1,3 +1,6 @@
+parameters:
+    elasticsearch.index.cart_events: 'cart-events-%kernel.environment%'
+
 services:
     CartBundle\:
         resource: '../../'
@@ -17,12 +20,10 @@ services:
         autowire: true
         autoconfigure: true
 
-    CartBundle\Infrastructure\EventListener\ProductUpdatedEventListener:
+    Elasticsearch\Client:
+        factory: [ 'CartBundle\Infrastructure\Persistence\Elasticsearch\ElasticsearchClientFactory', 'build' ]
         arguments:
-            $cartRepository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
-            $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
-        tags:
-            - { name: 'kernel.event_listener', event: ProductBundle\Domain\Event\ProductUpdatedEvent }
+            - '%env(ELASTICSEARCH_HOST)%'
 
     CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository:
         arguments:
@@ -37,6 +38,7 @@ services:
     CartBundle\Infrastructure\Event\DomainEventDispatcher:
         arguments:
             $dispatcher: '@event_dispatcher'
+
 
     CartBundle\UI\Http\Controller\AddProductToCartController:
         arguments:
@@ -54,6 +56,13 @@ services:
             $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
             $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
             $validatorHelper: '@App\Helper\ValidatorHelper'
+    CartBundle\Infrastructure\EventListener\ProductAddedToCartListener:
+        arguments:
+            $client: '@Elasticsearch\Client'
+            $indexName: '%elasticsearch.index.cart_events%'
+            $logger: '@logger'
+        tags:
+            - { name: 'kernel.event_listener', event: 'CartBundle\Domain\Event\ProductAddedToCartEvent', method: '__invoke' }
 
 
     CartBundle\UI\Http\Controller\DeleteProductFromCartController:
@@ -71,7 +80,13 @@ services:
             $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
             $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
             $validatorHelper: '@App\Helper\ValidatorHelper'
-
+    CartBundle\Infrastructure\EventListener\DeleteProductFromCartListener:
+        arguments:
+            $client: '@Elasticsearch\Client'
+            $indexName: '%elasticsearch.index.cart_events%'
+            $logger: '@logger'
+        tags:
+            - { name: 'kernel.event_listener', event: 'CartBundle\Domain\Event\DeleteProductFromCartEvent', method: '__invoke' }
 
     CartBundle\UI\Http\Controller\UpdateCartProductQtyController:
         arguments:
@@ -88,6 +103,12 @@ services:
             $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
             $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
             $validatorHelper: '@App\Helper\ValidatorHelper'
+    CartBundle\Infrastructure\EventListener\ProductUpdatedEventListener:
+        arguments:
+            $cartRepository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
+            $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
+        tags:
+            - { name: 'kernel.event_listener', event: 'ProductBundle\Domain\Event\ProductUpdatedEvent' }
 
 
     CartBundle\UI\Http\Controller\CartCheckoutController:
@@ -99,15 +120,18 @@ services:
         arguments:
             $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
             $orderRepository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineOrderRepository'
-#            $productRepository: '@ProductBundle\Domain\Repository\ProductRepository'
             $eventDispatcher: '@CartBundle\Infrastructure\Event\DomainEventDispatcher'
             $validator: '@CartBundle\Application\UseCases\Checkout\CartCheckoutValidator'
             $em: '@doctrine.orm.entity_manager'
-#            $logger:
-
-
     CartBundle\Application\UseCases\Checkout\CartCheckoutValidator:
         arguments:
             $repository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineCartRepository'
             $orderRepository: '@CartBundle\Infrastructure\Persistence\Mysql\DoctrineOrderRepository'
             $validatorHelper: '@App\Helper\ValidatorHelper'
+    CartBundle\Infrastructure\EventListener\CartCheckedOutListener:
+        arguments:
+            $client: '@Elasticsearch\Client'
+            $indexName: '%elasticsearch.index.cart_events%'
+            $logger: '@logger'
+        tags:
+            - { name: 'kernel.event_listener', event: 'CartBundle\Domain\Event\CartCheckedOutEvent', method: '__invoke' }

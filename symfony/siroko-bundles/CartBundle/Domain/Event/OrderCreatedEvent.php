@@ -9,4 +9,9 @@ final class OrderCreatedEvent
         public readonly string $cartCode,
         public readonly float $total
     ) {}
+
+    public function setOrderId(int $orderId): void
+    {
+        $this->orderId = $orderId;
+    }
 }

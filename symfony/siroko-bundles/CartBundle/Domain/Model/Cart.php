@@ -3,6 +3,7 @@
 namespace CartBundle\Domain\Model;
 
 use CartBundle\Domain\Event\ProductAddedToCartEvent;
+use CartBundle\Domain\Event\DeleteProductFromCartEvent;
 use CartBundle\Domain\Event\CartCheckedOutEvent;
 use CartBundle\Domain\ValueObject\CartCode;
 use CartBundle\Domain\ValueObject\CustomerId;
@@ -84,7 +85,6 @@ class Cart
         {
             $this->recordEvent(new ProductAddedToCartEvent($this->cartCode, $this->items[0]->getProductId()));
         }
-
     }
 
     public function markAsCheckedOut(int $orderId): void
@@ -93,7 +93,7 @@ class Cart
         $this->checkedOutAt = new DateTimeImmutable();
         $this->touch();
 
-        $this->recordEvent(new CartCheckedOutEvent($this->getCode()->value(), $orderId));
+        $this->recordEvent(new CartCheckedOutEvent($this->getCode(), $orderId));
     }
 
     public function addItem(CartItem $item): void
@@ -130,12 +130,13 @@ class Cart
     {
         foreach ($this->items as $index => $item) {
             if ($item->getProductId()->value() === $productId) {
+                $deletedProductId = $this->items[$index]->getProductId();
+                $this->recordEvent(new DeleteProductFromCartEvent($this->cartCode, $deletedProductId));
                 unset($this->items[$index]);
                 $this->touch();
                 return;
             }
         }
-
         throw new \RuntimeException("Product $productId not found in cart");
     }
 

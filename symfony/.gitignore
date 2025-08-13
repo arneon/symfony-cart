@@ -3,9 +3,13 @@
 /.env.local.php
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
+/public
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+/.env
+/.idea/
+composer.lock
 
 ###> phpunit/phpunit ###
 /phpunit.xml
