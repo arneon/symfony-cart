@@ -9,7 +9,6 @@
 ###< symfony/framework-bundle ###
 /.env
 /.idea/
-composer.lock
 
 ###> phpunit/phpunit ###
 /phpunit.xml
