@@ -6,6 +6,12 @@ controllers:
 
 product_bundle:
     resource: ../siroko-bundles/ProductBundle/Resources/config/routes.yaml
+    defaults: { _format: json }
 
 cart_bundle:
     resource: ../siroko-bundles/CartBundle/Resources/config/routes.yaml
+    defaults: { _format: json }
+
+user_bundle:
+    resource: ../siroko-bundles/UserBundle/Resources/config/routes.yaml
+    defaults: { _format: json }

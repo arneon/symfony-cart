@@ -1,13 +1,15 @@
 # Cart Backend (Symfony 7.3)
 
-Backend modular con **Symfony 7.3** que aplica **Arquitectura Hexagonal**, **DDD** y **CQRS**. El proyecto se compone de dos bundles:
+Backend modular con **Symfony 7.3** que aplica **Arquitectura Hexagonal**, **DDD** y **CQRS**. El proyecto se compone de tres bundles:
 
 - **ProductBundle**: gestión de productos (crear/actualizar/eliminar), lectura optimizada desde Redis.
 - **CartBundle**: carrito de compras (agregar/actualizar/eliminar ítems, ver carrito y checkout → pedido).
+- **UserBundle**: registro, login y actualización de usuarios, y refresh de token de acceso (Se implementa seguridad a los endpoints correspondientes de ProductBundle y CartBundle).
 
 Esta guía explica cómo levantar el proyecto y correr tests.  
 
-- **Update de 2025-08-13**: Se que no cuenta para la prueba, sin embargo me pareció adecuado hacerlo. Agregué eventos en el carrito para que se sincronice con Elastic Search, y posteriormente pueda ser consumido por el área de marketing a través de Kibana (por ejemplo). 
+- **Update de 2025-08-13**: Se que no cuenta para la prueba, sin embargo me pareció adecuado hacerlo. Agregué eventos en el carrito para que se sincronice con Elastic Search, y posteriormente pueda ser consumido por el área de marketing a través de Kibana (por ejemplo).
+- **Update de 2025-08-23**: Se implementó seguridad a los endpoints correspondientes de ProductBundle y CartBundle.
 ---
 
 ## Tabla de contenidos
@@ -31,7 +33,7 @@ Esta guía explica cómo levantar el proyecto y correr tests.
 - **Swagger/OpenAPI** (documentación de endpoints con `zircote/swagger-php`)
 - Tests: **PHPUnit**, **SQLite** para `APP_ENV=test`
 
-> Nota: No se usa API Platform (se descartó por temas de versión).
+> Nota: No se usa API Platform (se descartó por temas de versión).  
 > Para las coberturas de tests, debes tener configurardo el Xdebug.
 
 ---
@@ -39,11 +41,11 @@ Esta guía explica cómo levantar el proyecto y correr tests.
 ## Arquitectura
 
 - **Hexagonal y DDD**
-    - Los bundles se encuentran en `src/siroko-bundles/`.
-    - Los dominios se encuentran en `src/Domain/`.
-    - Los repositorios se encuentran en `src/Infrastructure/`.
-    - Los servicios se encuentran en `src/Application/`.
-    - Los eventos se encuentran en `src/Domain/Events/`.
+    - Los bundles se encuentran en `symfony/siroko-bundles/`.
+    - Los dominios se encuentran en `BundleName/Domain/`.
+    - Los repositorios se encuentran en `BundleName/Infrastructure/`.
+    - Los servicios se encuentran en `BundleName/Application/`.
+    - Los eventos se encuentran en `BundleName/Domain/Event/`.
 
 - **CQRS**
     - *Write model*: casos de uso que escriben en MySQL y disparan **eventos de dominio**.
@@ -92,9 +94,9 @@ cd symfony-cart
 
 ## Tests
 
-Los tests se ejecutan al momento de hacer el despliegue, puede verificarlos la cobertura de tests en `coverage/index.html`.
+Los tests se ejecutan al momento de hacer el despliegue, se puede verificar la cobertura de tests en `coverage/index.html`.
 
-También puede ejecutarlos desde la consola:
+También puede ejecutarlos desde la consola, en la raiz del proyecto (directorio symfony):
 ```bash
 php bin/phpunit --testdox --colors
 ```
@@ -107,10 +109,10 @@ symfony/
   ├─ config/
   ├─ public/
   ├─ src/
-  │   ├─ siroko-bundles/
-  │   │   ├─ ProductBundle/
-  │   │   └─ CartBundle/
-  │   └─ ...
+  ├─ siroko-bundles/
+  │   ├─ ProductBundle/
+  │   └─ CartBundle/
+  │   └─ UserBundle/
   ├─ var/
   └─ vendor/
 ```

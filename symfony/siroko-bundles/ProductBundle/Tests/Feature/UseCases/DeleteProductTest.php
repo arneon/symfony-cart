@@ -9,45 +9,46 @@ use ProductBundle\Tests\Feature\TestCase;
 
 class DeleteProductTest extends TestCase
 {
-    public function test_0_it_runs_migrations(): void
+    public function setUp(): void
     {
-        $created = $this->runMigrations();
-        $this->assertTrue($created);
+        parent::setUp();
+        $this->client = static::createClient();
+        self::bootKernel();
+        $this->runMigrations();
     }
 
     public function test_1_it_deletes_a_product_successfully(): void
     {
-        $client = static::createClient();
-        $id = $this->createProduct($client);
+        $headers = $this->authHeaders();
+        $id = $this->createProduct($this->client);
 
         $productRepository = static::getContainer()->get(DoctrineProductRepository::class);
         $product = $productRepository->find($id);
         $this->assertNotNull($product);
 
-        $client->request('DELETE', '/api/products/' . $id);
+        $this->client->request('DELETE', '/api/products/' . $id, [], [], $headers);
 
         $this->assertResponseIsSuccessful();
-        $this->assertSame(200, $client->getResponse()->getStatusCode());
+        $this->assertSame(200, $this->client->getResponse()->getStatusCode());
         $this->assertJsonStringEqualsJsonString(
             json_encode(['status' => 'Product deleted']),
-            $client->getResponse()->getContent()
+            $this->client->getResponse()->getContent()
         );
     }
 
     public function test_2_it_tries_to_delete_a_product_that_id_not_exists(): void
     {
-        $client = static::createClient();
-        $client->request('DELETE', '/api/products/999');
-        $this->assertSame(400, $client->getResponse()->getStatusCode());
-        $this->assertSame('{"errors":["Id does not exist."]}', $client->getResponse()->getContent());
+        $headers = $this->authHeaders();
+        $this->client->request('DELETE', '/api/products/999', [], [], $headers);
+        $this->assertSame(400, $this->client->getResponse()->getStatusCode());
+        $this->assertSame('{"errors":["Id does not exist."]}', $this->client->getResponse()->getContent());
     }
 
     public function test_3_it_tries_to_delete_a_product_with_id_error(): void
     {
-        $client = static::createClient();
-        $client->request('DELETE', '/api/products/9A9');
-        $this->assertSame(400, $client->getResponse()->getStatusCode());
-        $this->assertSame('{"errors":["Id must be greater than 0."]}', $client->getResponse()->getContent());
+        $headers = $this->authHeaders();
+        $this->client->request('DELETE', '/api/products/9A9', [], [], $headers);
+        $this->assertSame(400, $this->client->getResponse()->getStatusCode());
+        $this->assertSame('{"errors":["Id must be greater than 0."]}', $this->client->getResponse()->getContent());
     }
-
 }

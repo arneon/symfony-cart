@@ -35,6 +35,11 @@ doctrine:
                 type: attribute
                 dir: '%kernel.project_dir%/siroko-bundles/CartBundle/Infrastructure/Persistence/Mysql'
                 prefix: 'CartBundle\Infrastructure\Persistence\Mysql'
+            UserBundle:
+                is_bundle: false
+                type: attribute
+                dir: '%kernel.project_dir%/siroko-bundles/UserBundle/Infrastructure/Persistence/Mysql'
+                prefix: 'UserBundle\Infrastructure\Persistence\Mysql'
 
         controller_resolver:
             auto_mapping: false

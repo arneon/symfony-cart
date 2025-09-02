@@ -19,10 +19,9 @@ class CreateProductTest extends TestCase
     {
         $client = static::createClient();
         $payload = $this->getProductPayload();
+        $headers = $this->authHeaders();
 
-        $client->request('POST', '/api/products/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $client->request('POST', '/api/products', [], [], $headers, json_encode($payload));
 
         $data = json_decode($client->getResponse()->getContent(), true);
         $id = $data['id'];
@@ -46,10 +45,9 @@ class CreateProductTest extends TestCase
         $client = static::createClient();
         $payload = $this->getProductPayload();
         $payload['name'] = '';
+        $headers = $this->authHeaders();
 
-        $client->request('POST', '/api/products/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $client->request('POST', '/api/products', [], [], $headers, json_encode($payload));
 
         $this->assertSame(400, $client->getResponse()->getStatusCode());
         $this->assertSame('{"errors":["Name cannot be blank."]}', $client->getResponse()->getContent());
@@ -61,10 +59,9 @@ class CreateProductTest extends TestCase
         $payload = $this->getProductPayload();
         $payload['name'] = '';
         $payload['price'] = -1;
+        $headers = $this->authHeaders();
 
-        $client->request('POST', '/api/products/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $client->request('POST', '/api/products', [], [], $headers, json_encode($payload));
 
         $this->assertSame(400, $client->getResponse()->getStatusCode());
         $this->assertSame('{"errors":["Name cannot be blank.","Price must be greater than or equal to 0."]}', $client->getResponse()->getContent());
@@ -77,10 +74,9 @@ class CreateProductTest extends TestCase
         $payload['name'] = '';
         $payload['price'] = -1;
         $payload['stock'] = -1;
+        $headers = $this->authHeaders();
 
-        $client->request('POST', '/api/products/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $client->request('POST', '/api/products', [], [], $headers, json_encode($payload));
 
         $this->assertSame(400, $client->getResponse()->getStatusCode());
         $this->assertSame('{"errors":["Name cannot be blank.","Price must be greater than or equal to 0.","Stock must be greater than or equal to 0."]}', $client->getResponse()->getContent());
@@ -91,6 +87,7 @@ class CreateProductTest extends TestCase
         $client = static::createClient();
         $payload = $this->getProductPayload();
         $payload['name'] = 'Product 1';
+        $headers = $this->authHeaders();
         $id = $this->createProduct($client, $payload);
 
         $productRepository = static::getContainer()->get(DoctrineProductRepository::class);
@@ -100,9 +97,7 @@ class CreateProductTest extends TestCase
         $payload = $this->getProductPayload();
         $payload['name'] = $product1->getName()->value();
 
-        $client->request('POST', '/api/products/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $client->request('POST', '/api/products', [], [], $headers, json_encode($payload));
 
         $this->assertSame(400, $client->getResponse()->getStatusCode());
         $this->assertSame('{"errors":["Name already exists."]}', $client->getResponse()->getContent());

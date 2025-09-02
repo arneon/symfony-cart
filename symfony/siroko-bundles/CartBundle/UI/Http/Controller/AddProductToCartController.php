@@ -9,6 +9,7 @@ use CartBundle\Application\UseCases\AddProductToCart\AddProductToCartCommand;
 use CartBundle\Application\UseCases\AddProductToCart\AddProductToCartHandler;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 
 class AddProductToCartController
@@ -17,8 +18,10 @@ class AddProductToCartController
         private AddProductToCartHandler $handler,
     ) {}
 
+    #[Route('carts', name: 'add_product_to_cart', methods: ['POST'])]
+    #[IsGranted('LET_CART_WRITE')]
     #[OA\Post(
-        path: '/api/carts/',
+        path: '/api/carts',
         summary: 'Add Product to Cart',
         tags: ['Carts'],
         requestBody: new OA\RequestBody(
@@ -61,7 +64,6 @@ class AddProductToCartController
             )
         ]
     )]
-    #[Route('', name: 'add_product_to_cart', methods: ['POST'])]
     public function __invoke(Request $request): JsonResponse
     {
         try{

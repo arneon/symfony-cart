@@ -14,8 +14,7 @@ class OpenApiController
         $openapi = Generator::scan(
             [
                 __DIR__ . '/../',
-                __DIR__ . '/../../siroko-bundles/ProductBundle/',
-                __DIR__ . '/../../siroko-bundles/CartBundle/',
+                __DIR__ . '/../../siroko-bundles/',
             ]
         );
 

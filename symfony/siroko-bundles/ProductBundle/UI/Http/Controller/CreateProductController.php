@@ -9,7 +9,7 @@ use ProductBundle\Application\UseCases\CreateProduct\CreateProductCommand;
 use ProductBundle\Application\UseCases\CreateProduct\CreateProductHandler;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Attributes as OA;
-
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class CreateProductController
 {
@@ -17,8 +17,10 @@ class CreateProductController
         private CreateProductHandler $handler,
     ) {}
 
+    #[Route('products', name: 'create_product', methods: ['POST'])]
+    #[IsGranted('LET_PRODUCT_WRITE')]
     #[OA\Post(
-        path: '/api/products/',
+        path: '/api/products',
         summary: 'Create Product',
         tags: ['Products'],
         requestBody: new OA\RequestBody(
@@ -57,7 +59,6 @@ class CreateProductController
             )
         ]
     )]
-    #[Route('', name: 'create_product', methods: ['POST'])]
     public function __invoke(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -72,7 +73,7 @@ class CreateProductController
             $createdId = $this->handler->__invoke($command);
             return new JsonResponse(['status' => 'Product created', 'id' => $createdId], 201);
         } catch (ValidationException $e) {
-            return new JsonResponse(['errors' => $e->getErrors()], 400);
+            return new JsonResponse(['errors' => $e->getErrors()], $e->getCode());
         }
     }
 }

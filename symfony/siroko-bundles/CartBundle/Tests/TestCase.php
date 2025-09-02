@@ -2,8 +2,8 @@
 
 namespace CartBundle\Tests;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use UserBundle\Tests\TestCase as BaseTestCase;
 
-abstract class TestCase extends WebTestCase
+abstract class TestCase extends BaseTestCase
 {
 }

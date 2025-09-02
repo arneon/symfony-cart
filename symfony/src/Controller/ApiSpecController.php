@@ -9,6 +9,15 @@ use OpenApi\Attributes as OA;
     title: 'Siroko Cart - Api Documentation',
     description: 'Api Documentation'
 )]
+#[OA\SecurityScheme(
+    securityScheme: 'bearerAuth',
+    type: 'http',
+    scheme: 'bearer',
+    bearerFormat: 'JWT',
+    in: 'header',
+    name: 'Authorization'
+)]
+#[OA\OpenApi(security: [['bearerAuth' => []]])]
 class ApiSpecController
 {
 }

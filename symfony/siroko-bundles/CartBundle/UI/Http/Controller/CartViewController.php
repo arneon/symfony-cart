@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class CartViewController extends AbstractController
 {
@@ -17,6 +18,8 @@ class CartViewController extends AbstractController
     {
     }
 
+    #[Route('carts/{cart_code}', name: 'cart_view', methods: ['GET'])]
+    #[IsGranted('LET_CART_READ')]
     #[OA\Get(
         path: '/api/carts/{cart_code}',
         summary: 'View Cart',
@@ -34,7 +37,6 @@ class CartViewController extends AbstractController
             new OA\Response(response: 200, description: 'OK')
         ]
     )]
-    #[Route('{cart_code}', name: 'cart_view', methods: ['GET'])]
     public function getCart(mixed $cart_code, Request $request): JsonResponse
     {
         try{

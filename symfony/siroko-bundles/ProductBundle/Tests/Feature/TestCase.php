@@ -19,10 +19,9 @@ class TestCase extends BaseTestCase
 
     protected function createProduct($client, $payload = null): int
     {
+        $headers = $this->authHeaders(['ROLE_PRODUCT_MANAGE']);
         $payload = $payload ?? $this->getProductPayload();
-        $client->request('POST', '/api/products/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $client->request('POST', '/api/products', [], [], $headers, json_encode($payload));
 
         $data = json_decode($client->getResponse()->getContent(), true);
 

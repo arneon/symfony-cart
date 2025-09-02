@@ -12,6 +12,7 @@ class AddProductToCartTest extends TestCase
 
     public function setUp(): void
     {
+        parent::setUp();
         $this->client = static::createClient();
         self::bootKernel();
         $this->runMigrations();
@@ -19,6 +20,7 @@ class AddProductToCartTest extends TestCase
 
     public function test_1_it_adds_product_to_cart(): void
     {
+        $headers = $this->authHeaders();
         $productId = $this->createProduct($this->client, $this->getProductPayload());
         $this->assertIsInt($productId);
 
@@ -29,9 +31,7 @@ class AddProductToCartTest extends TestCase
             'qty'       => 2,
         ];
 
-        $this->client->request('POST', '/api/carts/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('POST', '/api/carts', [], [], $headers, json_encode($payload));
 
         $this->assertSame(201, $this->client->getResponse()->getStatusCode());
         $data = json_decode($this->client->getResponse()->getContent(), true);
@@ -39,7 +39,7 @@ class AddProductToCartTest extends TestCase
         $this->assertArrayHasKey('cart_code', $data);
         $this->assertNotEmpty($data['cart_code']);
 
-        $this->client->request('GET', '/api/carts/'.$data['cart_code']);
+        $this->client->request('GET', '/api/carts/'.$data['cart_code'], [], [], $headers);
         $this->assertSame(200, $this->client->getResponse()->getStatusCode());
 
         $cart = json_decode($this->client->getResponse()->getContent(), true);
@@ -53,10 +53,11 @@ class AddProductToCartTest extends TestCase
 
     public function test_2_it_adds_second_item_to_existing_open_cart(): void
     {
+        $headers = $this->authHeaders();
         $product_1 = $this->createProduct($this->client, $this->getProductPayload('New Product 1', 77, 7));
         $product_2 = $this->createProduct($this->client, $this->getProductPayload('New Product 2', 10.0, 5));
 
-        $this->client->request('POST', '/api/carts/', [], [], ['CONTENT_TYPE'=>'application/json'], json_encode([
+        $this->client->request('POST', '/api/carts', [], [], $headers, json_encode([
             'product_id' => $product_1,
             'qty' => 2
         ]));
@@ -64,7 +65,7 @@ class AddProductToCartTest extends TestCase
         $this->assertSame(201, $this->client->getResponse()->getStatusCode());
         $cartCode = json_decode($this->client->getResponse()->getContent(), true)['cart_code'];
 
-        $this->client->request('POST', "/api/carts/", [], [], ['CONTENT_TYPE'=>'application/json'], json_encode([
+        $this->client->request('POST', "/api/carts", [], [], $headers, json_encode([
             'cart_code' => $cartCode,
             'product_id' => $product_2,
             'qty' => 1
@@ -72,7 +73,7 @@ class AddProductToCartTest extends TestCase
 
         $this->assertSame(201, $this->client->getResponse()->getStatusCode());
 
-        $this->client->request('GET', "/api/carts/{$cartCode}");
+        $this->client->request('GET', "/api/carts/{$cartCode}", [], [], $headers);
         $this->assertSame(200, $this->client->getResponse()->getStatusCode());
         $cart = json_decode($this->client->getResponse()->getContent(), true);
 
@@ -83,7 +84,8 @@ class AddProductToCartTest extends TestCase
 
     public function test_3_it_tries_to_add_product_not_exists(): void
     {
-        $this->client->request('POST', '/api/carts/', [], [], ['CONTENT_TYPE'=>'application/json'], json_encode([
+        $headers = $this->authHeaders();
+        $this->client->request('POST', '/api/carts', [], [], $headers, json_encode([
             'product_id' => 999999,
             'qty' => 1
         ]));
@@ -96,9 +98,10 @@ class AddProductToCartTest extends TestCase
 
     public function test_4_it_tries_to_add_product_qty_greater_than_stock(): void
     {
+        $headers = $this->authHeaders();
         $productId = $this->createProduct($this->client, $this->getProductPayload(stock: 3));
 
-        $this->client->request('POST', '/api/carts/', [], [], ['CONTENT_TYPE'=>'application/json'], json_encode([
+        $this->client->request('POST', '/api/carts', [], [], $headers, json_encode([
             'product_id' => $productId,
             'qty' => 4
         ]));
@@ -110,15 +113,16 @@ class AddProductToCartTest extends TestCase
 
     public function test_5_it_tries_to_add_same_product_in_cart_twice(): void
     {
+        $headers = $this->authHeaders();
         $product_1 = $this->createProduct($this->client, $this->getProductPayload());
 
-        $this->client->request('POST', '/api/carts/', [], [], ['CONTENT_TYPE'=>'application/json'], json_encode([
+        $this->client->request('POST', '/api/carts', [], [], $headers, json_encode([
             'product_id' => $product_1,
             'qty' => 1
         ]));
         $cartCode = json_decode($this->client->getResponse()->getContent(), true)['cart_code'];
 
-        $this->client->request('POST', "/api/carts/", [], [], ['CONTENT_TYPE'=>'application/json'], json_encode([
+        $this->client->request('POST', "/api/carts", [], [], $headers, json_encode([
             'cart_code' => $cartCode,
             'product_id' => $product_1,
             'qty' => 3

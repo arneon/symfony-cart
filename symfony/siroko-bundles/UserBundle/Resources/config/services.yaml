@@ -1,0 +1,85 @@
+parameters:
+    elasticsearch.index.user_events: 'user-events-%kernel.environment%'
+    Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher: ~
+    Symfony\Component\PasswordHasher\PasswordHasherInterface: '@UserBundle\Infrastructure\Service\PasswordHasher'
+    auth.refresh_ttl: '+30 days'
+    auth.refresh_single_use: true
+    user_bundle_config.roles: [
+        'ROLE_USER','ROLE_ADMIN', 'ROLE_PRODUCT_MANAGE', 'ROLE_CART_MANAGE', 'ROLE_USER_MANAGE', 'ROLE_CUSTOMER'
+    ]
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    UserBundle\:
+        resource: '../../'
+        exclude:
+            - '../../Domain/Model/'
+            - '../../Domain/ValueObject/'
+            - '../../Domain/Event/'
+
+    UserBundle\UI\Http\Controller\:
+        resource: '../../UI/Http/Controller'
+        public: true
+        autowire: true
+        autoconfigure: true
+
+    UserBundle\Application\UseCases\:
+        resource: '../../Application/UseCases/'
+        autowire: true
+        autoconfigure: true
+
+    UserBundle\Infrastructure\Persistence\Mysql\DoctrineUserRepository:
+        arguments:
+            $em: '@doctrine.orm.entity_manager'
+            $mapper: '@UserBundle\Infrastructure\Persistence\Mysql\Mapper\UserMapper'
+
+    UserBundle\Infrastructure\Event\DomainEventDispatcher:
+        arguments:
+            $dispatcher: '@event_dispatcher'
+
+    UserBundle\UI\Http\Controller\RegisterUserController:
+        arguments:
+            $handler: '@UserBundle\Application\UseCases\RegisterUser\RegisterUserHandler'
+        tags: [ 'controller.service_arguments' ]
+        public: true
+    UserBundle\Application\UseCases\RegisterUser\RegisterUserValidator:
+        arguments:
+            $repository: '@UserBundle\Infrastructure\Persistence\Mysql\DoctrineUserRepository'
+            $validatorHelper: '@App\Helper\ValidatorHelper'
+    UserBundle\Infrastructure\EventListener\RegisteredUserListener:
+        arguments:
+            $client: '@Elasticsearch\Client'
+            $indexName: '%elasticsearch.index.user_events%'
+            $logger: '@logger'
+        tags:
+            - { name: 'kernel.event_listener', event: 'UserBundle\Domain\Event\RegisteredUserEvent', method: '__invoke' }
+
+
+    UserBundle\UI\Http\Controller\LoginUserController:
+        arguments:
+            $handler: '@UserBundle\Application\UseCases\LoginUser\LoginUserHandler'
+        tags: [ 'controller.service_arguments' ]
+        public: true
+
+    UserBundle\UI\Http\Controller\RefreshTokenController:
+        public: true
+        tags: [ 'controller.service_arguments' ]
+        arguments:
+            $refreshTtl: '%auth.refresh_ttl%'
+            $singleUse: '%auth.refresh_single_use%'
+            $userProvider: '@security.user.provider.concrete.app_user_provider'
+
+    UserBundle\Infrastructure\Security\Authorization\Voter\PermissionVoter:
+        arguments:
+            $permissionMap: '%user.permissions_map%'
+        tags: [ 'security.voter' ]
+
+#    UserBundle\Infrastructure\Security\Authentication\Google\GoogleIdTokenVerifier:
+#        arguments:
+#            $clientId: '%env(GOOGLE_CLIENT_ID)%'
+
+#    UserBundle\Application\Ports\Security\IdTokenVerifier:
+#        alias: UserBundle\Infrastructure\Security\Authentication\Google\GoogleIdTokenVerifier

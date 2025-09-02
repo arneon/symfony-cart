@@ -9,6 +9,7 @@ use CartBundle\Application\UseCases\DeleteProductFromCart\DeleteProductFromCartC
 use CartBundle\Application\UseCases\DeleteProductFromCart\DeleteProductFromCartHandler;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class DeleteProductFromCartController
 {
@@ -16,8 +17,10 @@ class DeleteProductFromCartController
         private DeleteProductFromCartHandler $handler,
     ) {}
 
+    #[Route('carts', name: 'delete_product_from_cart', methods: ['DELETE'])]
+    #[IsGranted('LET_CART_WRITE')]
     #[OA\Delete(
-        path: '/api/carts/',
+        path: '/api/carts',
         summary: 'Delete Product from Cart',
         tags: ['Carts'],
         requestBody: new OA\RequestBody(
@@ -50,7 +53,6 @@ class DeleteProductFromCartController
             )
         ]
     )]
-    #[Route('', name: 'delete_product_from_cart', methods: ['DELETE'])]
     public function __invoke(Request $request): JsonResponse
     {
         try{

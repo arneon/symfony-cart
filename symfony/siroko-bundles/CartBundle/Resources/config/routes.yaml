@@ -1,5 +1,5 @@
 cart_bundle_routes:
     resource: ../../UI/Http/Controller/
     type: attribute
-    prefix: /api/carts
+    prefix: /api
 

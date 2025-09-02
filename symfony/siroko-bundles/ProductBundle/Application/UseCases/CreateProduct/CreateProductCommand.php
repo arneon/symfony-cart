@@ -8,7 +8,11 @@ class CreateProductCommand
     public ?float $price;
     public ?int $stock;
 
-    public function __construct( ?string $name, ?float $price, ?int $stock )
+    public function __construct(
+        ?string $name = null,
+        ?float $price = null,
+        ?int $stock = null
+    )
     {
         $this->name = $name;
         $this->price = $price;

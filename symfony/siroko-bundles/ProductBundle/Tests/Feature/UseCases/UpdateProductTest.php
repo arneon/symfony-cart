@@ -9,48 +9,44 @@ use ProductBundle\Tests\Feature\TestCase;
 
 class UpdateProductTest extends TestCase
 {
-    public function test_0_it_runs_migrations(): void
+    public function setUp(): void
     {
-        $created = $this->runMigrations();
-        $this->assertTrue($created);
+        parent::setUp();
+        $this->client = static::createClient();
+        self::bootKernel();
+        $this->runMigrations();
     }
 
     public function test_1_it_updates_a_product_successfully(): void
     {
-        $client = static::createClient();
-        $id = $this->createProduct($client, ['name' => 'Product 1' ]);
-        $productRepository = static::getContainer()->get(DoctrineProductRepository::class);
-        $product = $productRepository->find($id);
-        $this->assertNotNull($product);
-        $productCurrentName = $product->getName()->value();
+        $headers = $this->authHeaders();
+        $id = $this->createProduct($this->client, ['name' => 'Product 1' ]);
 
         $payload = $this->getProductPayload();
-        $payload['name'] = 'Updated Product 1';
+        $payload['name'] = 'Updated Product 11';
         $payload['id'] = $id;
 
-        $client->request('PUT', '/api/products/'.$id, [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('PUT', '/api/products/'.$id, [], [], $headers, json_encode($payload));
 
         $this->assertResponseIsSuccessful();
-        $this->assertSame(200, $client->getResponse()->getStatusCode());
+        $this->assertSame(200, $this->client->getResponse()->getStatusCode());
 
         $productRepository = static::getContainer()->get(DoctrineProductRepository::class);
         $product = $productRepository->find($id);
+
         $this->assertNotNull($product);
         $this->assertSame($payload['name'], $product->getName()->value());
-        $this->assertNotSame($productCurrentName, $product->getName()->value());
 
         $this->assertJsonStringEqualsJsonString(
             json_encode(['status' => 'Product updated']),
-            $client->getResponse()->getContent()
+            $this->client->getResponse()->getContent()
         );
     }
 
     public function test_2_it_tries_to_update_a_product_with_name_field_error(): void
     {
-        $client = static::createClient();
-        $id = $this->createProduct($client, ['name' => 'Product 2' ]);
+        $headers = $this->authHeaders();
+        $id = $this->createProduct($this->client, ['name' => 'Product 2' ]);
         $productRepository = static::getContainer()->get(DoctrineProductRepository::class);
         $product = $productRepository->find($id);
         $this->assertNotNull($product);
@@ -58,18 +54,16 @@ class UpdateProductTest extends TestCase
         $payload = $this->getProductPayload();
         $payload['name'] = '';
 
-        $client->request('PUT', '/api/products/'.$id, [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('PUT', '/api/products/'.$id, [], [], $headers, json_encode($payload));
 
-        $this->assertSame(400, $client->getResponse()->getStatusCode());
-        $this->assertSame('{"errors":["Name cannot be blank."]}', $client->getResponse()->getContent());
+        $this->assertSame(400, $this->client->getResponse()->getStatusCode());
+        $this->assertSame('{"errors":["Name cannot be blank."]}', $this->client->getResponse()->getContent());
     }
 
     public function test_3_it_tries_to_update_a_product_with_name_and_price_fields_error(): void
     {
-        $client = static::createClient();
-        $id = $this->createProduct($client, ['name' => 'Product 3' ]);
+        $headers = $this->authHeaders();
+        $id = $this->createProduct($this->client, ['name' => 'Product 3' ]);
         $productRepository = static::getContainer()->get(DoctrineProductRepository::class);
         $product = $productRepository->find($id);
         $this->assertNotNull($product);
@@ -78,18 +72,16 @@ class UpdateProductTest extends TestCase
         $payload['name'] = '';
         $payload['price'] = -1;
 
-        $client->request('PUT', '/api/products/'.$id, [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('PUT', '/api/products/'.$id, [], [], $headers, json_encode($payload));
 
-        $this->assertSame(400, $client->getResponse()->getStatusCode());
-        $this->assertSame('{"errors":["Name cannot be blank.","Price must be greater than or equal to 0."]}', $client->getResponse()->getContent());
+        $this->assertSame(400, $this->client->getResponse()->getStatusCode());
+        $this->assertSame('{"errors":["Name cannot be blank.","Price must be greater than or equal to 0."]}', $this->client->getResponse()->getContent());
     }
 
     public function test_4_it_tries_to_update_a_product_with_name_price_and_stock_fields_error(): void
     {
-        $client = static::createClient();
-        $id = $this->createProduct($client, ['name' => 'Product 4' ]);
+        $headers = $this->authHeaders();
+        $id = $this->createProduct($this->client, ['name' => 'Product 4' ]);
         $productRepository = static::getContainer()->get(DoctrineProductRepository::class);
         $product = $productRepository->find($id);
         $this->assertNotNull($product);
@@ -99,18 +91,16 @@ class UpdateProductTest extends TestCase
         $payload['price'] = -1;
         $payload['stock'] = -1;
 
-        $client->request('PUT', '/api/products/'.$id, [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('PUT', '/api/products/'.$id, [], [], $headers, json_encode($payload));
 
-        $this->assertSame(400, $client->getResponse()->getStatusCode());
-        $this->assertSame('{"errors":["Name cannot be blank.","Price must be greater than or equal to 0.","Stock must be greater than or equal to 0."]}', $client->getResponse()->getContent());
+        $this->assertSame(400, $this->client->getResponse()->getStatusCode());
+        $this->assertSame('{"errors":["Name cannot be blank.","Price must be greater than or equal to 0.","Stock must be greater than or equal to 0."]}', $this->client->getResponse()->getContent());
     }
 
     public function test_5_it_tries_to_update_a_product_with_name_already_exists(): void
     {
-        $client = static::createClient();
-        $id = $this->createProduct($client, ['name' => 'Product 5' ]);
+        $headers = $this->authHeaders();
+        $id = $this->createProduct($this->client, ['name' => 'Product 5' ]);
         $productRepository = static::getContainer()->get(DoctrineProductRepository::class);
         $product = $productRepository->find($id);
         $firstProductName = $product->getName()->value();
@@ -118,7 +108,7 @@ class UpdateProductTest extends TestCase
 
         $payload = $this->getProductPayload();
         $payload['name'] = 'Product 6';
-        $id = $this->createProduct($client, $payload);
+        $id = $this->createProduct($this->client, $payload);
 
         $productRepository = static::getContainer()->get(DoctrineProductRepository::class);
         $product1 = $productRepository->find($id);
@@ -127,11 +117,9 @@ class UpdateProductTest extends TestCase
         $payload = $this->getProductPayload();
         $payload['name'] = $firstProductName;
 
-        $client->request('PUT', '/api/products/'.$id, [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('PUT', '/api/products/'.$id, [], [], $headers, json_encode($payload));
 
-        $this->assertSame(400, $client->getResponse()->getStatusCode());
-        $this->assertSame('{"errors":["Name already exists."]}', $client->getResponse()->getContent());
+        $this->assertSame(400, $this->client->getResponse()->getStatusCode());
+        $this->assertSame('{"errors":["Name already exists."]}', $this->client->getResponse()->getContent());
     }
 }

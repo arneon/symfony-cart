@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use ProductBundle\Application\UseCases\DeleteProduct\DeleteProductHandler;
 use ProductBundle\Application\UseCases\DeleteProduct\DeleteProductCommand;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class DeleteProductController
 {
@@ -17,6 +18,8 @@ class DeleteProductController
     }
 
 
+    #[Route('products/{id}', name: 'delete_product', methods: ['DELETE'])]
+    #[IsGranted('LET_PRODUCT_WRITE')]
     #[OA\Delete(
         path: '/api/products/{id}',
         summary: 'Delete Product',
@@ -37,7 +40,6 @@ class DeleteProductController
             ),
         ]
     )]
-    #[Route('{id}', name: 'delete_product', methods: ['DELETE'])]
     public function __invoke(mixed $id, Request $request): JsonResponse
     {
         $command = new DeleteProductCommand($id);

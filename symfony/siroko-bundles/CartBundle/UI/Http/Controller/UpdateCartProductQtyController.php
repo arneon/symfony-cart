@@ -9,6 +9,7 @@ use CartBundle\Application\UseCases\UpdateCartProductQty\UpdateCartProductQtyCom
 use CartBundle\Application\UseCases\UpdateCartProductQty\UpdateCartProductQtyHandler;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 
 class UpdateCartProductQtyController
@@ -17,8 +18,10 @@ class UpdateCartProductQtyController
         private UpdateCartProductQtyHandler $handler,
     ) {}
 
+    #[Route('carts', name: 'update_cart_product_qty', methods: ['PUT'])]
+    #[IsGranted('LET_CART_WRITE')]
     #[OA\Put(
-        path: '/api/carts/',
+        path: '/api/carts',
         summary: 'Update Cart Product Quantity',
         tags: ['Carts'],
         requestBody: new OA\RequestBody(
@@ -56,7 +59,6 @@ class UpdateCartProductQtyController
             )
         ]
     )]
-    #[Route('', name: 'update_cart_product_qty', methods: ['PUT'])]
     public function __invoke(Request $request): JsonResponse
     {
         try{

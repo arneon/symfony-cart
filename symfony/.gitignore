@@ -15,3 +15,7 @@
 /.phpunit.cache/
 ###< phpunit/phpunit ###
 /var/data_test.db
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###

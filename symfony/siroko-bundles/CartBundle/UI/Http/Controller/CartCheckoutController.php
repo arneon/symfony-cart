@@ -9,7 +9,7 @@ use CartBundle\Application\UseCases\Checkout\CartCheckoutCommand;
 use CartBundle\Application\UseCases\Checkout\CartCheckoutHandler;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Attributes as OA;
-
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class CartCheckoutController
 {
@@ -17,8 +17,10 @@ class CartCheckoutController
         private CartCheckoutHandler $handler,
     ) {}
 
+    #[Route('carts/checkout', name: 'cart_checkout', methods: ['POST'])]
+    #[IsGranted('LET_CART_WRITE')]
     #[OA\Post(
-        path: '/api/carts/checkout/',
+        path: '/api/carts/checkout',
         summary: 'Cart Checkout',
         tags: ['Carts'],
         requestBody: new OA\RequestBody(
@@ -61,7 +63,6 @@ class CartCheckoutController
             )
         ]
     )]
-    #[Route('checkout/', name: 'cart_checkout', methods: ['POST'])]
     public function __invoke(Request $request): JsonResponse
     {
         try{

@@ -20,11 +20,10 @@ class TestCase extends BaseTestCase
     protected function createProduct($client, $payload = []): int
     {
         $payload = !empty($payload) ? $payload : $this->getProductPayload();
-        $client->request('POST', '/api/products/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
-        $data = json_decode($client->getResponse()->getContent(), true);
+        $headers = $this->authHeaders(['ROLE_PRODUCT_MANAGE']);
 
+        $client->request('POST', '/api/products', [], [], $headers, json_encode($payload));
+        $data = json_decode($client->getResponse()->getContent(), true);
         return filter_var($data['id'], FILTER_VALIDATE_INT);
     }
 

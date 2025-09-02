@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use ProductBundle\Application\UseCases\UpdateProduct\UpdateProductCommand;
 use ProductBundle\Application\UseCases\UpdateProduct\UpdateProductHandler;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UpdateProductController
 {
@@ -18,6 +19,8 @@ class UpdateProductController
     {
     }
 
+    #[Route('products/{id}', name: 'update_product', methods: ['PUT'])]
+    #[IsGranted('LET_PRODUCT_WRITE')]
     #[OA\Put(
         path: '/api/products/{id}',
         summary: 'Update Product',
@@ -67,7 +70,6 @@ class UpdateProductController
             )
         ]
     )]
-    #[Route('/{id}', name: 'update_product', methods: ['PUT'])]
     public function __invoke(mixed $id, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);

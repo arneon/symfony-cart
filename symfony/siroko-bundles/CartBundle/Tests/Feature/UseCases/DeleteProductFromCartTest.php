@@ -12,6 +12,7 @@ class DeleteProductFromCartTest extends TestCase
 
     public function setUp(): void
     {
+        parent::setUp();
         $this->client = static::createClient();
         self::bootKernel();
         $this->runMigrations();
@@ -19,6 +20,7 @@ class DeleteProductFromCartTest extends TestCase
 
     private function addProductToCart() : array
     {
+        $headers = $this->authHeaders();
         $productId = $this->createProduct($this->client, $this->getProductPayload());
 
         $payload = [
@@ -28,9 +30,7 @@ class DeleteProductFromCartTest extends TestCase
             'qty'       => 2,
         ];
 
-        $this->client->request('POST', '/api/carts/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('POST', '/api/carts', [], [], $headers, json_encode($payload));
 
         $data = json_decode($this->client->getResponse()->getContent(), true);
 
@@ -42,6 +42,7 @@ class DeleteProductFromCartTest extends TestCase
 
     public function test_1_it_deletes_product_from_cart()
     {
+        $headers = $this->authHeaders();
         $cartData = $this->addProductToCart();
 
         $payload = [
@@ -49,15 +50,14 @@ class DeleteProductFromCartTest extends TestCase
             'product_id' => $cartData['productId'],
         ];
 
-        $this->client->request('DELETE', '/api/carts/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('DELETE', '/api/carts', [], [], $headers, json_encode($payload));
 
         $this->assertSame(200, $this->client->getResponse()->getStatusCode());
     }
 
     public function test_2_it_tries_to_delete_product_not_exists_from_cart()
     {
+        $headers = $this->authHeaders();
         $cartData = $this->addProductToCart();
 
         $payload = [
@@ -65,9 +65,7 @@ class DeleteProductFromCartTest extends TestCase
             'product_id' => ($cartData['productId'] + 1000),
         ];
 
-        $this->client->request('DELETE', '/api/carts/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('DELETE', '/api/carts', [], [], $headers, json_encode($payload));
 
         $this->assertSame(400, $this->client->getResponse()->getStatusCode());
         $errors = json_decode($this->client->getResponse()->getContent(), true);
@@ -76,6 +74,7 @@ class DeleteProductFromCartTest extends TestCase
 
     public function test_3_it_tries_to_delete_product_from_cart_that_not_exists()
     {
+        $headers = $this->authHeaders();
         $cartData = $this->addProductToCart();
 
         $payload = [
@@ -83,9 +82,7 @@ class DeleteProductFromCartTest extends TestCase
             'product_id' => ($cartData['productId']),
         ];
 
-        $this->client->request('DELETE', '/api/carts/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('DELETE', '/api/carts', [], [], $headers, json_encode($payload));
 
         $this->assertSame(400, $this->client->getResponse()->getStatusCode());
         $errors = json_decode($this->client->getResponse()->getContent(), true);

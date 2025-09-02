@@ -1,0 +1,5 @@
+user_bundle_routes:
+    resource: ../../UI/Http/Controller/
+    type: attribute
+    prefix: /api/users
+

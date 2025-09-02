@@ -7,6 +7,11 @@ services:
     volumes:
       - ./symfony:/var/www/html
     working_dir: /var/www/html
+    environment:
+      - XDEBUG_MODE=${XDEBUG_MODE}
+      - PHP_IDE_CONFIG=serverName=php
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - siroko-network
     depends_on:

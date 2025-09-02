@@ -12,6 +12,7 @@ class CartCheckoutTest extends TestCase
 
     public function setUp(): void
     {
+        parent::setUp();
         $this->client = static::createClient();
         self::bootKernel();
         $this->runMigrations();
@@ -19,6 +20,7 @@ class CartCheckoutTest extends TestCase
 
     public function test_1_it_make_checkout_of_created_cart(): void
     {
+        $headers = $this->authHeaders();
         $productId = $this->createProduct($this->client, $this->getProductPayload());
 
         $payload = [
@@ -28,12 +30,10 @@ class CartCheckoutTest extends TestCase
             'qty'       => 1,
         ];
 
-        $this->client->request('POST', '/api/carts/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('POST', '/api/carts', [], [], $headers, json_encode($payload));
 
         $cartCode = json_decode($this->client->getResponse()->getContent(), true)['cart_code'];
-        $this->client->request('GET', "/api/carts/{$cartCode}", [], [], ['CONTENT_TYPE'=>'application/json']);
+        $this->client->request('GET', "/api/carts/{$cartCode}", [], [], $headers);
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertSame($cartCode, $data['cartCode']);
 
@@ -43,9 +43,7 @@ class CartCheckoutTest extends TestCase
             'customer_email' => "test@test.es",
         ];
 
-        $this->client->request('POST', "/api/carts/checkout/", [], [], [
-            'CONTENT_TYPE'=>'application/json'
-        ], json_encode($checkoutPayload));
+        $this->client->request('POST', "/api/carts/checkout", [], [], $headers, json_encode($checkoutPayload));
 
         $this->assertSame(201, $this->client->getResponse()->getStatusCode());
         $data = json_decode($this->client->getResponse()->getContent(), true);
@@ -54,6 +52,7 @@ class CartCheckoutTest extends TestCase
 
     public function test_2_it_tries_to_make_checkout_of_cart_not_exists(): void
     {
+        $headers = $this->authHeaders();
         $productId = $this->createProduct($this->client, $this->getProductPayload());
 
         $payload = [
@@ -63,12 +62,10 @@ class CartCheckoutTest extends TestCase
             'qty'       => 1,
         ];
 
-        $this->client->request('POST', '/api/carts/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('POST', '/api/carts', [], [], $headers, json_encode($payload));
 
         $cartCode = json_decode($this->client->getResponse()->getContent(), true)['cart_code'];
-        $this->client->request('GET', "/api/carts/{$cartCode}", [], [], ['CONTENT_TYPE'=>'application/json']);
+        $this->client->request('GET', "/api/carts/{$cartCode}", [], [], $headers);
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertSame($cartCode, $data['cartCode']);
 
@@ -78,9 +75,7 @@ class CartCheckoutTest extends TestCase
             'customer_email' => "test@test.es",
         ];
 
-        $this->client->request('POST', "/api/carts/checkout/", [], [], [
-            'CONTENT_TYPE'=>'application/json'
-        ], json_encode($checkoutPayload));
+        $this->client->request('POST', "/api/carts/checkout", [], [], $headers, json_encode($checkoutPayload));
 
         $this->assertSame(400, $this->client->getResponse()->getStatusCode());
 
@@ -90,6 +85,7 @@ class CartCheckoutTest extends TestCase
 
     public function test_3_it_tries_to_make_checkout_of_cart_with_bad_cart_total(): void
     {
+        $headers = $this->authHeaders();
         $productId = $this->createProduct($this->client, $this->getProductPayload());
 
         $payload = [
@@ -99,12 +95,10 @@ class CartCheckoutTest extends TestCase
             'qty'       => 1,
         ];
 
-        $this->client->request('POST', '/api/carts/', [], [], [
-            'CONTENT_TYPE' => 'application/json'
-        ], json_encode($payload));
+        $this->client->request('POST', '/api/carts', [], [], $headers, json_encode($payload));
 
         $cartCode = json_decode($this->client->getResponse()->getContent(), true)['cart_code'];
-        $this->client->request('GET', "/api/carts/{$cartCode}", [], [], ['CONTENT_TYPE'=>'application/json']);
+        $this->client->request('GET', "/api/carts/{$cartCode}", [], [], $headers);
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertSame($cartCode, $data['cartCode']);
 
@@ -114,9 +108,7 @@ class CartCheckoutTest extends TestCase
             'customer_email' => "test@test.es",
         ];
 
-        $this->client->request('POST', "/api/carts/checkout/", [], [], [
-            'CONTENT_TYPE'=>'application/json'
-        ], json_encode($checkoutPayload));
+        $this->client->request('POST', "/api/carts/checkout", [], [], $headers, json_encode($checkoutPayload));
 
         $this->assertSame(400, $this->client->getResponse()->getStatusCode());
 
