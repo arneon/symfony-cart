@@ -11,6 +11,7 @@ git pull
 
 cd symfony
 composer install
+php bin/console lexik:jwt:generate-keypair --overwrite
 
 cd ..
 
