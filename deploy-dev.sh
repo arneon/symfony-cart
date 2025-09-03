@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ./set-env.sh
-exit 0
+
 git pull
 
 cd symfony
