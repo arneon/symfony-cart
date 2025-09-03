@@ -54,12 +54,16 @@ update_kv_in_file() {
   ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 }
 
+MYSQL_PORT="$(get_env .env.example MYSQL_PORT || true)"
+              [ -n "${MYSQL_PORT:-}" ] || { echo "MYSQL_PORT no encontrada"; exit 1; }
+
 REDIS_PORT="$(get_env .env.example REDIS_PORT || true)"
               [ -n "${REDIS_PORT:-}" ] || { echo "REDIS_PORT no encontrada"; exit 1; }
 
 ELASTIC_PORT1="$(get_env .env.example ELASTIC_PORT1 || true)"
              [ -n "${ELASTIC_PORT1:-}" ] || { echo "ELASTIC_PORT1 no encontrada"; exit 1; }
 
+update_kv_in_file "symfony/.env.example" "MYSQL_PORT" "$MYSQL_PORT"
 update_kv_in_file "symfony/.env.example" "REDIS_PORT" "$REDIS_PORT"
 update_kv_in_file "symfony/.env.test.example" "REDIS_PORT" "$REDIS_PORT"
 update_kv_in_file "symfony/.env.example" "ELASTIC_PORT1" "$ELASTIC_PORT1"
