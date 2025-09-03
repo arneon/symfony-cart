@@ -8,7 +8,7 @@ git pull
 
 cd symfony
 composer install
-php bin/console lexik:jwt:generate-keypair --overwrite
+php bin/console lexik:jwt:generate-keypair --overwrite --no-interaction --quiet
 
 cd ..
 
